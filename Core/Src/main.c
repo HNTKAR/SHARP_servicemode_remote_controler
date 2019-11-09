@@ -63,9 +63,9 @@ static void inv_RepeatPulse(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 //Power ON
-int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x48, 0x68, 0x8B };
+//int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x48, 0x68, 0x8B };
 //service mode 1
-//int remote_control_code_array[6] = { 0xAA, 0x5A, 0x8F, 0x30, 0xF5, 0x01 };
+int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x0C, 0xAF, 0x80 };
 //service mode 2
 //int remote_control_code_array[6] = { 0xAA, 0x5A, 0x8F, 0x31, 0xF5, 0x11 };
 //service mode 3
@@ -76,6 +76,7 @@ int tmp1 = 0;
 int tmp2 = 0;
 int tmp3 = 0;
 int T = 17;
+int sharp_T = 17;
 //unsigned long remote_control_code = 0x555AF148688B;
 
 /* USER CODE END 0 */
@@ -162,8 +163,8 @@ int main(void) {
 				}
 			}
 		}
-			/* USER CODE END WHILE */
-			/* USER CODE BEGIN 3 */
+		/* USER CODE END WHILE */
+		/* USER CODE BEGIN 3 */
 
 		HAL_Delay(1000);
 	}
@@ -299,7 +300,7 @@ static void inv_RepeatPulse(void) {
 }
 static void inv_sharp_Pulse(int ToF) {
 	if (ToF == 0) {
-		for (int i = 0; i < T * 1; i++) {
+		for (int i = 0; i < sharp_T * 1; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
@@ -307,7 +308,7 @@ static void inv_sharp_Pulse(int ToF) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		}
-		for (int i = 0; i < T * 3; i++) {
+		for (int i = 0; i < sharp_T * 3; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
@@ -316,7 +317,7 @@ static void inv_sharp_Pulse(int ToF) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		}
 	} else {
-		for (int i = 0; i < T * 1; i++) {
+		for (int i = 0; i < sharp_T * 1; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
@@ -324,7 +325,7 @@ static void inv_sharp_Pulse(int ToF) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		}
-		for (int i = 0; i < T * 7; i++) {
+		for (int i = 0; i < sharp_T * 7; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
