@@ -52,33 +52,21 @@ static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void Pulse(int Tof);
-static void LeaderPulse(void);
 static void inv_Pulse(int Tof);
-static void inv_sharp_Pulse(int ToF);
+static void LeaderPulse(void);
 static void inv_LeaderPulse(void);
-static void inv_RepeatPulse(void);
-
+static void Pulse_zero_or_one(int ToF);
+static void inv_Pulse_zero_or_one(int ToF);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 //Power ON
 //int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x48, 0x68, 0x8B };
-//service mode 1
+//service mode
 int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x0C, 0xAF, 0x80 };
-//service mode 2
-//int remote_control_code_array[6] = { 0xAA, 0x5A, 0x8F, 0x31, 0xF5, 0x11 };
-//service mode 3
-//int remote_control_code_array[6] = { 0xAA, 0x5A, 0x8F, 0x32, 0xF5, 0x21 };
-//familink
-//int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x48, 0x88, 0x85 };
-int tmp1 = 0;
-int tmp2 = 0;
-int tmp3 = 0;
-int T = 17;
-int sharp_T = 17;
-//unsigned long remote_control_code = 0x555AF148688B;
 
+int T = 17;
 /* USER CODE END 0 */
 
 /**
@@ -109,64 +97,27 @@ int main(void) {
 	MX_GPIO_Init();
 	MX_USART2_UART_Init();
 	/* USER CODE BEGIN 2 */
-//inv data code
-//	for (int i = 4; i < (sizeof(remote_control_code_array)) / 4; i++) {
-//		remote_control_code_array[i] = ((~remote_control_code_array[i] | 0x100)
-//				& 0x1FF);
-//	}
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
-//		uint8_t msg[] = "Hello\n\r";
-//		HAL_UART_Transmit(&huart2, msg, sizeof(msg), 100);
-		if (remote_control_code_array[0] == 0xAA) {
-			inv_sharp_Pulse(0);
-			inv_sharp_Pulse(1);
-			inv_sharp_Pulse(0);
-			inv_sharp_Pulse(1);
-			for (int k = 0; k < 1; k++) {
-				for (int i = 0; i < (sizeof(remote_control_code_array)) / 4;
-						i++) {
-					for (int j = 0; j < 8; j++) {
-//				tmp1 = remote_control_code_array[i];//& 0x1FF;
-//				tmp2 = (remote_control_code_array[i] >> (7-j)) & 0b1;
-						inv_Pulse(
-								((remote_control_code_array[i] >> (7 - j)) & 0b1));
-					}
-				}
-				inv_Pulse(1);
-				HAL_Delay(6);
-				/* USER CODE END WHILE */
-				/* USER CODE BEGIN 3 */
-			}
-		} else {
-			for (int k = 0; k < 1; k++) {
-				inv_LeaderPulse();
-				for (int i = 0; i < (sizeof(remote_control_code_array)) / 4;
-						i++) {
-					for (int j = 0; j < 8; j++) {
-//				tmp1 = remote_control_code_array[i];//& 0x1FF;
-//				tmp2 = (remote_control_code_array[i] >> (7-j)) & 0b1;
-						inv_Pulse(
-								((remote_control_code_array[i] >> (7 - j)) & 0b1));
-					}
-				}
-				inv_Pulse(1);
-				HAL_Delay(6);
-				HAL_Delay(53);
-				for (int i = 0; i < 0; i++) {
-					inv_RepeatPulse();
-					inv_Pulse(0);
-					HAL_Delay(122);
+		inv_LeaderPulse();
+		for (int k = 0; k < 1; k++) {
+			for (int i = 0; i < (sizeof(remote_control_code_array)) / 4; i++) {
+				for (int j = 0; j < 8; j++) {
+					inv_Pulse(
+							((remote_control_code_array[i] >> (7 - j)) & 0b1));
 				}
 			}
+			inv_Pulse(1);
+			HAL_Delay(6);
+			/* USER CODE END WHILE */
+			/* USER CODE BEGIN 3 */
 		}
 		/* USER CODE END WHILE */
 		/* USER CODE BEGIN 3 */
-
-		HAL_Delay(1000);
+		HAL_Delay(5000);
 	}
 	/* USER CODE END 3 */
 }
@@ -261,18 +212,83 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 
-static void inv_LeaderPulse(void) {
+static void LeaderPulse(void) {
 	for (int i = 0; i < (T * 8) - (T - 1); i++) {
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		Pulse_zero_or_one(1);
 	}
 	for (int i = 0; i < (T * 4) - (T - 7); i++) {
+		Pulse_zero_or_one(0);
+	}
+}
+
+static void inv_LeaderPulse(void) {
+	for (int i = 0; i < (T * 8) - (T - 1); i++) {
+		inv_Pulse_zero_or_one(1);
+	}
+	for (int i = 0; i < (T * 4) - (T - 7); i++) {
+		inv_Pulse_zero_or_one(0);
+	}
+}
+
+static void Pulse(int ToF) {
+	for (int i = 0; i < T * 1; i++) {
+		Pulse_zero_or_one(1);
+	}
+	if (ToF == 0) {
+		for (int i = 0; i < T * 1; i++) {
+			Pulse_zero_or_one(0);
+		}
+	} else {
+		for (int i = 0; i < T * 3; i++) {
+			Pulse_zero_or_one(0);
+		}
+	}
+}
+
+static void inv_Pulse(int ToF) {
+	for (int i = 0; i < T * 1; i++) {
+		inv_Pulse_zero_or_one(1);
+	}
+	if (ToF == 0) {
+		for (int i = 0; i < T * 1; i++) {
+			inv_Pulse_zero_or_one(0);
+		}
+	} else {
+		for (int i = 0; i < T * 3; i++) {
+			inv_Pulse_zero_or_one(0);
+		}
+	}
+}
+
+static void Pulse_zero_or_one(int ToF) {
+	if (ToF == 0) {
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+	} else {
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+	}
+}
+
+static void inv_Pulse_zero_or_one(int ToF) {
+	if (ToF == 0) {
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
+	} else {
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
@@ -280,98 +296,6 @@ static void inv_LeaderPulse(void) {
 	}
 }
 
-static void inv_RepeatPulse(void) {
-	for (int i = 0; i < (T * 8) - (T - 1); i++) {
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-	}
-	for (int i = 0; i < (T * 8) - (T - 1); i++) {
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-	}
-}
-static void inv_sharp_Pulse(int ToF) {
-	if (ToF == 0) {
-		for (int i = 0; i < sharp_T * 1; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-		for (int i = 0; i < sharp_T * 3; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-	} else {
-		for (int i = 0; i < sharp_T * 1; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-		for (int i = 0; i < sharp_T * 7; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-	}
-}
-static void inv_Pulse(int ToF) {
-	if (ToF == 0) {
-		for (int i = 0; i < T * 1; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-		for (int i = 0; i < T * 1; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-	} else {
-		for (int i = 0; i < T * 1; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-		for (int i = 0; i < T * 3; i++) {
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
-		}
-	}
-}
 /* USER CODE END 4 */
 
 /**
