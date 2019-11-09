@@ -62,9 +62,9 @@ static void inv_Pulse_zero_or_one(int ToF);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 //Power ON
-//int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x48, 0x68, 0x8B };
+int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x48, 0x68, 0x8B };
 //service mode
-int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x0C, 0xAF, 0x80 };
+//int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x0C, 0xAF, 0x80 };
 
 int T = 17;
 /* USER CODE END 0 */
