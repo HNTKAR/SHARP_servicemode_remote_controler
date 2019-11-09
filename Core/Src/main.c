@@ -59,9 +59,10 @@ static void LeaderPulse(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 int remote_control_code_array[6] = { 0x55, 0x5A, 0xF1, 0x48, 0x68, 0x8B };
-int tmp1;
-int tmp2;
-int tmp3;
+int tmp1 = 0;
+int tmp2 = 0;
+int tmp3 = 0;
+int T = 17;
 //unsigned long remote_control_code = 0x555AF148688B;
 
 /* USER CODE END 0 */
@@ -94,34 +95,35 @@ int main(void) {
 	MX_GPIO_Init();
 	MX_USART2_UART_Init();
 	/* USER CODE BEGIN 2 */
-
-	for (int i = 0; i < (sizeof(remote_control_code_array)) / 4; i++) {
+//inv data code
+	for (int i = 4; i < (sizeof(remote_control_code_array)) / 4; i++) {
 		remote_control_code_array[i] = ((~remote_control_code_array[i] | 0x100)
 				& 0x1FF);
 	}
+
 	/* USER CODE END 2 */
 
 	/* Infinite loop */
 	/* USER CODE BEGIN WHILE */
 	while (1) {
-//		HAL_Delay(500);
 //		uint8_t msg[] = "Hello\n\r";
 //		HAL_UART_Transmit(&huart2, msg, sizeof(msg), 100);
-//		HAL_Delay(500);
-//		uint8_t msg2[] = "world\n\r";
-//		HAL_UART_Transmit(&huart2, msg2, sizeof(msg2), 100);
-		LeaderPulse();
-		for (int i = 0; i < (sizeof(remote_control_code_array)) / 4; i++) {
-			for (int j = 0; j < 8; j++) {
+
+		for (int k = 0; k < 4; k++) {
+			LeaderPulse();
+			for (int i = 0; i < (sizeof(remote_control_code_array)) / 4; i++) {
+				for (int j = 0; j < 8; j++) {
 //				tmp1 = remote_control_code_array[i];//& 0x1FF;
 //				tmp2 = (remote_control_code_array[i] >> (7-j)) & 0b1;
-				Pulse(((remote_control_code_array[i] >> (7 - j)) & 0b1));
+					Pulse(((remote_control_code_array[i] >> (7 - j)) & 0b1));
+				}
 			}
+			Pulse(1);
+			HAL_Delay(10);
+			/* USER CODE END WHILE */
+			/* USER CODE BEGIN 3 */
 		}
-		Pulse(0);
-		HAL_Delay(10);
-		/* USER CODE END WHILE */
-		/* USER CODE BEGIN 3 */
+		HAL_Delay(1000);
 	}
 	/* USER CODE END 3 */
 }
@@ -217,7 +219,7 @@ static void MX_GPIO_Init(void) {
 /* USER CODE BEGIN 4 */
 
 static void LeaderPulse(void) {
-	for (int i = 0; i < 352; i++) {
+	for (int i = 0; i < (T * 8) - (T - 1); i++) {
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -225,7 +227,7 @@ static void LeaderPulse(void) {
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 	}
-	for (int i = 0; i < 176; i++) {
+	for (int i = 0; i < (T * 4) - (T - 7); i++) {
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -236,7 +238,7 @@ static void LeaderPulse(void) {
 }
 static void Pulse(int ToF) {
 	if (ToF == 0) {
-		for (int i = 0; i < 22; i++) {
+		for (int i = 0; i < T * 1; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -244,7 +246,7 @@ static void Pulse(int ToF) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		}
-		for (int i = 0; i < 22; i++) {
+		for (int i = 0; i < T * 1; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -253,7 +255,7 @@ static void Pulse(int ToF) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		}
 	} else {
-		for (int i = 0; i < 22; i++) {
+		for (int i = 0; i < T * 1; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
@@ -261,7 +263,7 @@ static void Pulse(int ToF) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 		}
-		for (int i = 0; i < 66; i++) {
+		for (int i = 0; i < T * 3; i++) {
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
 			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
